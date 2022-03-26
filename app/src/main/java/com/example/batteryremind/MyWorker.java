@@ -15,6 +15,9 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 import static android.provider.Settings.System.getString;
 import static androidx.core.content.ContextCompat.getSystemService;
 
@@ -34,11 +37,32 @@ public class MyWorker extends Worker {
             "Shows notifications whenever work starts";
     public static final String CHANNEL_ID = "VERBOSE_NOTIFICATION" ;
 
-    int NOTIFICATION_ID = 233;
+    static int NOTIFICATION_ID = 233;
 
     @NonNull
     @Override
     public Result doWork() {
+        int currentHour = getCurrentHour();
+        Log.d("currentHour", Integer.toString(currentHour));
+        if (!(currentHour >= 0 && currentHour <= 8)) {
+            makeStatusNotification(getApplicationContext());
+            Log.d("Result", "success");
+            return Result.success();
+        } else {
+            Log.d("Result", "failure");
+            return Result.failure();
+        }
+    }
+
+    int getCurrentHour() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(
+                TimeZone.getTimeZone("GMT+8"));
+        int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+        return currentHour;
+    }
+
+    static void makeStatusNotification(Context context) {
         // Make a channel if necessary
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create the NotificationChannel, but only on API 26+ because
@@ -80,7 +104,5 @@ public class MyWorker extends Worker {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
-
-        return Result.success();
     }
 }

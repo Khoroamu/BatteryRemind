@@ -67,13 +67,13 @@ public class MainActivity extends AppCompatActivity {
 
 //                TestDriver testDriver = WorkManagerTestInitHelper.getTestDriver();
 
-                info = (ListenableWorker) WorkManager
-                        .getInstance(myContext)
-                        .getWorkInfosForUniqueWork("battery remind");
-
-                if (info.isStopped()) {
-
-                }
+//                info = (ListenableWorker) WorkManager
+//                        .getInstance(myContext)
+//                        .getWorkInfosForUniqueWork("battery remind");
+//
+//                if (info.isStopped()) {
+//
+//                }
 
                 WorkManager
                         .getInstance(myContext)
