@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.util.Log;
@@ -18,6 +19,7 @@ import androidx.work.WorkerParameters;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.provider.Settings.System.getString;
 import static androidx.core.content.ContextCompat.getSystemService;
 
@@ -35,9 +37,11 @@ public class MyWorker extends Worker {
             "Verbose WorkManager Notifications";
     public static String VERBOSE_NOTIFICATION_CHANNEL_DESCRIPTION =
             "Shows notifications whenever work starts";
-    public static final String CHANNEL_ID = "VERBOSE_NOTIFICATION" ;
+    public static final String CHANNEL_ID = "VERBOSE_NOTIFICATION";
 
     static int NOTIFICATION_ID = 233;
+
+//    private static float lastBatteryPct;
 
     @NonNull
     @Override
@@ -45,6 +49,7 @@ public class MyWorker extends Worker {
         int currentHour = getCurrentHour();
         Log.d("currentHour", Integer.toString(currentHour));
         if (!(currentHour >= 0 && currentHour <= 8)) {
+//        if (true) {
             makeStatusNotification(getApplicationContext());
             Log.d("Result", "success");
             return Result.success();
@@ -86,19 +91,29 @@ public class MyWorker extends Worker {
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = context.registerReceiver(null, ifilter);
 
-
         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         Log.d("battery", "scale: " + scale);
 
         float batteryPct = level * 100 / (float)scale;
+
+//        float historyCost = Power.lastBatteryPct - batteryPct;
+
+        SharedPreferences lastBatteryPct = context.getSharedPreferences("lastBatteryPct", MODE_PRIVATE);
+        float historyBatteryPct = lastBatteryPct.getFloat("batteryPct", 0);
+        float historyCost = historyBatteryPct - batteryPct;
+
+        SharedPreferences.Editor editor = lastBatteryPct.edit();
+        editor.putFloat("batteryPct", batteryPct);
+        editor.commit();
+
         Log.d("battery", "batteryPct: " + batteryPct);
 
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("My notification")
-                .setContentText(Float.toString(batteryPct))
+                .setContentTitle("当前电量为 " + batteryPct)
+                .setContentText("历史耗电为 " + historyCost)
 //                .setStyle(new NotificationCompat.BigTextStyle()
 //                        .bigText("Much longer text that cannot fit one line..."))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -106,3 +121,4 @@ public class MyWorker extends Worker {
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
     }
 }
+
