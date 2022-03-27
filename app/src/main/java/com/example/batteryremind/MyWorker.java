@@ -20,8 +20,6 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
-import static android.provider.Settings.System.getString;
-import static androidx.core.content.ContextCompat.getSystemService;
 
 public class MyWorker extends Worker {
     public MyWorker(
@@ -39,9 +37,7 @@ public class MyWorker extends Worker {
             "Shows notifications whenever work starts";
     public static final String CHANNEL_ID = "VERBOSE_NOTIFICATION";
 
-    static int NOTIFICATION_ID = 233;
-
-//    private static float lastBatteryPct;
+    public static int NOTIFICATION_ID = 233;
 
     @NonNull
     @Override
@@ -49,7 +45,6 @@ public class MyWorker extends Worker {
         int currentHour = getCurrentHour();
         Log.d("currentHour", Integer.toString(currentHour));
         if (!(currentHour >= 0 && currentHour <= 8)) {
-//        if (true) {
             makeStatusNotification(getApplicationContext());
             Log.d("Result", "success");
             return Result.success();
@@ -68,10 +63,7 @@ public class MyWorker extends Worker {
     }
 
     static void makeStatusNotification(Context context) {
-        // Make a channel if necessary
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create the NotificationChannel, but only on API 26+ because
-            // the NotificationChannel class is new and not in the support library
             CharSequence name = VERBOSE_NOTIFICATION_CHANNEL_NAME;
             String description = VERBOSE_NOTIFICATION_CHANNEL_DESCRIPTION;
             int importance = NotificationManager.IMPORTANCE_HIGH;
@@ -79,7 +71,6 @@ public class MyWorker extends Worker {
                     new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
 
-            // Add the channel
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -97,8 +88,6 @@ public class MyWorker extends Worker {
 
         float batteryPct = level * 100 / (float)scale;
 
-//        float historyCost = Power.lastBatteryPct - batteryPct;
-
         SharedPreferences lastBatteryPct = context.getSharedPreferences("lastBatteryPct", MODE_PRIVATE);
         float historyBatteryPct = lastBatteryPct.getFloat("batteryPct", 0);
         float historyCost = historyBatteryPct - batteryPct;
@@ -109,13 +98,10 @@ public class MyWorker extends Worker {
 
         Log.d("battery", "batteryPct: " + batteryPct);
 
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("当前电量为 " + batteryPct)
                 .setContentText("历史耗电为 " + historyCost)
-//                .setStyle(new NotificationCompat.BigTextStyle()
-//                        .bigText("Much longer text that cannot fit one line..."))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());

@@ -1,5 +1,6 @@
 package com.example.batteryremind;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -8,11 +9,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.DialogFragment;
 
-public class StartGameDialogFragment extends DialogFragment {
-
-    /* The activity that creates an instance of this dialog fragment must
-     * implement this interface in order to receive event callbacks.
-     * Each method passes the DialogFragment in case the host needs to query it. */
+public class ConfirmDialogFragment extends DialogFragment {
     public interface NoticeDialogListener {
         public void onDialogPositiveClick(DialogFragment dialog);
         public void onDialogNegativeClick(DialogFragment dialog);
@@ -31,7 +28,7 @@ public class StartGameDialogFragment extends DialogFragment {
             listener = (NoticeDialogListener) context;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
-            throw new ClassCastException("AAA"// activity.toString()
+            throw new ClassCastException(((Activity) context).toString()
                     + " must implement NoticeDialogListener");
         }
     }
@@ -40,19 +37,18 @@ public class StartGameDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("确定取消任务吗")
+        builder.setMessage("确定取消任务吗？")
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // START THE GAME!
                         // Send the positive button event back to the host activity
-                        listener.onDialogPositiveClick(StartGameDialogFragment.this);
+                        listener.onDialogPositiveClick(ConfirmDialogFragment.this);
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
                         // Send the negative button event back to the host activity
-                        listener.onDialogNegativeClick(StartGameDialogFragment.this);
+                        listener.onDialogNegativeClick(ConfirmDialogFragment.this);
                     }
                 });
         // Create the AlertDialog object and return it
